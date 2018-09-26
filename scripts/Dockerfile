@@ -1,4 +1,4 @@
-FROM python:2.7
+FROM python:2.7.14-stretch
 MAINTAINER Guowei Huang <hguowei@sina.com>
 
 USER root
