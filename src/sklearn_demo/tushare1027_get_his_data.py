@@ -99,14 +99,20 @@ def get_his_data(code, start_string="2018-01-01"):
         start_string = start_string
 
     query_data = get_data(code, start_string, end_string)
+
+    print("query_data", query_data)
+    if query_data is None or pydash.is_empty(query_data):
+        return result_data
+
     if result_data is None:
         result_data = query_data
     else:
         result_data = np.append(result_data, query_data, axis=0)
 
     dataframe = pd.DataFrame(result_data, columns=["date", "open", "close", "high", "low", "volume", "code"])
-
     dataframe.to_csv(csv_path, index=False)
+
+    return dataframe
 
 
 get_his_data("000001")
