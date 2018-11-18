@@ -11,14 +11,16 @@ from src.sklearn_demo.daily_data import get_daily_data, _to_query_date_string, _
 print(pydash.__version__)
 
 
-def query_minite_data(code, quering_date, ktype):
-    print("query_minite_data(", code, ", ", quering_date, ", ", ktype, ")")
+def query_minite_data(code, quering_date, ktype, is_print=False):
+    if is_print:
+        print("query_minite_data(", code, ", ", quering_date, ", ", ktype, ")")
     if isinstance(quering_date, datetime):
         start_date_string = _to_query_date_string(quering_date)
     else:
         start_date_string = quering_date
 
-    print("Quering ", code, " from", start_date_string, start_date_string, ktype)
+    if is_print:
+        print("Quering ", code, " from", start_date_string, start_date_string, ktype)
     data = tushare.get_k_data(code=code,
                               start=start_date_string,
                               end=start_date_string,

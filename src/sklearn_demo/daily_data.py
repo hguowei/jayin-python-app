@@ -40,8 +40,9 @@ def _to_query_date(date):
         return datetime(year=date.year, month=date.month, day=date.day)
 
 
-def query_daily_data(code, start_date_string, end_date_string, ktype="D"):
-    print("query_daily_data(", code, ",", start_date_string, ",", end_date_string, ")")
+def query_daily_data(code, start_date_string, end_date_string, ktype="D", is_print=False):
+    if is_print:
+        print("query_daily_data(", code, ",", start_date_string, ",", end_date_string, ")")
     if isinstance(code, int):
         code = "%06d" % code
 

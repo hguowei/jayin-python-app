@@ -146,11 +146,9 @@ if __name__ == "__main__":
 
     all_df_features_values = []
     all_df_features_cols = None
-    # codes = [538]
-    # codes = pydash.reverse(codes)
-    start = 6
-    step = 100
-    codes = codes[start * step:start * step + step]
+    # start = 6
+    # step = 100
+    # codes = codes[start * step:start * step + step]
     for idx, code in enumerate(codes):
         csv_path_features = "data_result/data.%s.%s.result.csv" % (code, last_cal_date)
         daily_data = get_daily_data(code, just_download=False)
@@ -164,12 +162,12 @@ if __name__ == "__main__":
                                             just_download=False)
             except:
                 minites_data = None
-            print("Done", idx, code, quering_date, "minites data is None?", minites_data is None)
+            # print("Done", idx, code, quering_date, "minites data is None?", minites_data is None)
 
             if minites_data is not None:
                 if master_df_cols is None:
                     master_df_cols = minites_data.columns.tolist()
-                print("is dataframe", isinstance(minites_data, pd.DataFrame))
+                # print("is dataframe", isinstance(minites_data, pd.DataFrame))
                 master_df_data = pydash.concat(master_df_data, minites_data.values.tolist())
 
         if pydash.is_empty(master_df_data):
@@ -179,16 +177,24 @@ if __name__ == "__main__":
 
         if len(master_df) < int(60 / 5 * 3.5):
             continue
-        df_features = do_extract_feature(spark, master_df, daily_data, csv_path_features)
+        if os.path.exists(csv_path_features):
+            df_features = pd.read_csv(csv_path_features)
+        else:
+            continue
+
+        # just get training data.
+        # df_features = do_extract_feature(spark, master_df, daily_data, csv_path_features)
 
         if df_features is None:
+            print("XXXXXXX")
             continue
         else:
             all_df_features_values = pydash.concat(all_df_features_values, df_features.values.tolist())
 
+        print("all_df_features_values", len(all_df_features_values))
         if all_df_features_cols is None:
             all_df_features_cols = df_features.columns.tolist()
 
-    csv_path_to_train = "data_result/data.%s.to_train.csv" % (last_cal_date)
+    csv_path_to_train = "data.%d.%s.to_train.csv" % (now_date.day, last_cal_date)
     to_train_df = pd.DataFrame(all_df_features_values, columns=all_df_features_cols)
     to_train_df.to_csv(csv_path_to_train, index=False)

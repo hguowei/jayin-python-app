@@ -11,8 +11,9 @@ from src.sklearn_demo.daily_data import get_daily_data, _to_query_date_string, _
 print(pydash.__version__)
 
 
-def query_minite_data(code, quering_date, ktype):
-    print("query_minite_data(", code, ", ", quering_date, ", ", ktype, ")")
+def query_minite_data(code, quering_date, ktype, is_print=False):
+    if is_print:
+        print("query_minite_data(", code, ", ", quering_date, ", ", ktype, ")")
     if isinstance(quering_date, datetime):
         start_date_string = _to_query_date_string(quering_date)
     else:
@@ -42,7 +43,7 @@ def query_minite_data(code, quering_date, ktype):
         return data
 
 
-def get_min_data(code, quering_date, just_download=False):
+def get_min_data(code, quering_date, is_for_train_not_eval=True, just_download=False):
     if isinstance(code, int):
         code = "%06d" % code
 
@@ -52,10 +53,25 @@ def get_min_data(code, quering_date, just_download=False):
     csv_path = "data/data.%s.%s.%s.csv" % (code, ktype, quering_date)
     result_data = None
 
+    def is_can_return(result_data):
+        if is_for_train_not_eval:
+            if len(result_data) < 4 * 12:
+                if os.path.exists(csv_path):
+                    os.remove(csv_path)
+                return True
+        else:
+            if len(result_data) < int(3.5 * 12):
+                if os.path.exists(csv_path):
+                    os.remove(csv_path)
+                return True
+        return True
+
     if just_download and os.path.exists(csv_path):
         return True
     if os.path.exists(csv_path):
-        return pd.read_csv(csv_path)
+        tmp_csv_data = pd.read_csv(csv_path)
+        if is_can_return(tmp_csv_data):
+            return tmp_csv_data
 
     query_data = query_minite_data(code, quering_date, ktype)
 
@@ -64,6 +80,8 @@ def get_min_data(code, quering_date, just_download=False):
     else:
         result_data = np.append(result_data, query_data, axis=0)
 
+    if is_can_return(result_data):
+        return None
     dataframe = pd.DataFrame(result_data, columns=["date", "open", "close", "high", "low", "volume", "code"])
 
     dataframe.to_csv(csv_path, index=False)

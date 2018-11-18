@@ -148,7 +148,7 @@ if __name__ == "__main__":
     all_df_features_cols = None
     # codes = [538]
     # codes = pydash.reverse(codes)
-    start = 6
+    start = 11
     step = 100
     codes = codes[start * step:start * step + step]
     for idx, code in enumerate(codes):
@@ -181,13 +181,14 @@ if __name__ == "__main__":
             continue
         df_features = do_extract_feature(spark, master_df, daily_data, csv_path_features)
 
-        if df_features is None:
-            continue
-        else:
-            all_df_features_values = pydash.concat(all_df_features_values, df_features.values.tolist())
-
-        if all_df_features_cols is None:
-            all_df_features_cols = df_features.columns.tolist()
+        continue
+        # if df_features is None:
+        #     continue
+        # else:
+        #     all_df_features_values = pydash.concat(all_df_features_values, df_features.values.tolist())
+        #
+        # if all_df_features_cols is None:
+        #     all_df_features_cols = df_features.columns.tolist()
 
     csv_path_to_train = "data_result/data.%s.to_train.csv" % (last_cal_date)
     to_train_df = pd.DataFrame(all_df_features_values, columns=all_df_features_cols)
