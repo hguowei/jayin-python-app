@@ -4,3 +4,18 @@
 [submodule "src/Feature-Selection"]
 	path = src/Feature-Selection
 	url = https://github.com/duxuhao/Feature-Selection.git
+[submodule "src/feifeili/answers"]
+	path = src/feifeili/answers
+	url = https://github.com/lightaime/cs231n.git
+[submodule "src/tensorflow/models"]
+	path = src/tensorflow/models
+	url = https://github.com/tensorflow/models.git
+[submodule "src/udacity/aind2-cnn"]
+	path = src/udacity/aind2-cnn
+	url = https://github.com/udacity/aind2-cnn.git
+[submodule "src/pyqtgraph"]
+	path = src/pyqtgraph
+	url = https://github.com/pyqtgraph/pyqtgraph.git
+[submodule "src/Python-PANDAS"]
+	path = src/Python-PANDAS
+	url = https://github.com/Asummit/Python-PANDAS.git

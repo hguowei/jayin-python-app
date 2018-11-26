@@ -1,0 +1,10 @@
+scikit-learn
+scipy
+seaborn
+statsmodels
+IPython
+ipywidgets
+requests
+bokeh
+toolz
+Pillow
