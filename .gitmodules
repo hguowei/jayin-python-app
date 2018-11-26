@@ -1,0 +1,6 @@
+[submodule "src/feature-selector"]
+	path = src/feature-selector
+	url = https://github.com/WillKoehrsen/feature-selector.git
+[submodule "src/Feature-Selection"]
+	path = src/Feature-Selection
+	url = https://github.com/duxuhao/Feature-Selection.git
