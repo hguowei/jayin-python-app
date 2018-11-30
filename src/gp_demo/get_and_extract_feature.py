@@ -25,36 +25,38 @@ def do_extract_feature(spark, master_df, df_day, csv_path_features=None):
         if os.path.exists(csv_path_features):
             return pd.read_csv(csv_path_features)
 
-    day_open_dict = dict(pydash.chain(df_day["date"].tolist()).zip(df_day["open"].tolist()).value())
-
-    first_date = pd.Timestamp(master_df["date"][0]) + pd.offsets.Hour(7)
-
     master_df["date"] = master_df["date"].apply(pd.Timestamp)
-    # TODO CANNOT FILTER THIS.!!!!
-    master_df = master_df[master_df["date"].apply(pd.Timestamp) > first_date]
+
+    def code_to_string(code):
+        if isinstance(code, int):
+            return "%06d" % code
+        else:
+            return code
+
+    master_df["code"] = master_df["code"].apply(code_to_string)
 
     # Get the time before 2:30
     X_endtime = 14 * 60 + 30
 
-    def filter_before230(row, is_filter_before=True):
-        date = row.date
-        # val1 = (date.hour * 60 + date.minute)
+    def filter_before230(date, is_filter_before=True):
+        val1 = (date.hour * 60 + date.minute)
         # print("date", date, val1, X_endtime, val1 <= X_endtime)
-        before_230 = (date.hour * 60 + date.minute) <= X_endtime
+        before_230 = val1 <= X_endtime
         if is_filter_before:
             return before_230
         else:
             return not before_230
 
-        # return date.hour == 14
+    date_list = master_df["date"].tolist()
+    is_before = pydash.map_(date_list, lambda x: filter_before230(x, True))
+    master_df_before_230 = master_df[is_before]
+    is_after = pydash.map_(date_list, lambda x: filter_before230(x, False))
+    master_df_after_230 = master_df[is_after]
 
-    # print("master_df")
-    # print(master_df)
-    master_df_before_230 = master_df[master_df.apply(lambda row: filter_before230(row, True), axis=1)]
-    master_df_after_230 = master_df[master_df.apply(lambda row: filter_before230(row, False), axis=1)]
+    day_open_dict = dict(pydash.chain(df_day["date"].tolist()).zip(df_day["open"].tolist()).value())
 
-    # print("master_df_before_230", master_df_before_230.head())
-    # print("master_df_after_230", master_df_after_230.head())
+    # Get the time before 2:30
+    X_endtime = 14 * 60 + 30
 
     def to_day(tmp_date):
         new_date_string = "%4d-%02d-%02d" % (tmp_date.year, tmp_date.month, tmp_date.day)
@@ -87,7 +89,13 @@ def do_extract_feature(spark, master_df, df_day, csv_path_features=None):
         new_date = datetime(tmp_date.year, tmp_date.month, tmp_date.day)
         return new_date, row
 
-    max_can_buy = spark.createDataFrame(master_df_after_230).rdd.map(to_kv_func).groupByKey().flatMap(
+    print("master_df_after_230", master_df_after_230)
+    x1 = spark.createDataFrame(master_df_after_230)
+    rdd1 = x1.rdd.map(to_kv_func)
+    print("rdd1", rdd1.take(1))
+    rdd2 = rdd1.groupByKey()
+    print("rdd2", rdd2.take(1))
+    max_can_buy = rdd2.flatMap(
         map_func).collect()
 
     date_list = pydash.map_(max_can_buy, lambda kv: kv[0])
@@ -128,6 +136,7 @@ if __name__ == "__main__":
     trade_cal = get_trade_cal_list(now_date)
     cal_date = trade_cal[-31:-1]
     last_cal_date = cal_date[-1]
+    print("cal_date", cal_date)
 
     all_df_features_values = []
     all_df_features_cols = None
@@ -142,17 +151,17 @@ if __name__ == "__main__":
     todo = pydash.difference(all, good)
     print("todo", todo)
     # start = todo[0]
-    start = 0
+    start = 5
     step = 100
     print("start", start)
     codes = codes[start * step:start * step + step]
 
-    code = 61
-    quering_date = "2018-11-29"
-    minites_data = get_min_data(code, quering_date=quering_date, is_for_train_not_eval=True,
-                                just_download=False)
-    print("minites_data", minites_data)
-    exit()
+    # code = 61
+    # quering_date = "2018-11-29"
+    # minites_data = get_min_data(code, quering_date=quering_date, is_for_train_not_eval=True,
+    #                             just_download=False)
+    # print("minites_data", minites_data)
+    # exit()
     for idx, code in enumerate(codes):
         csv_path_features = "%s/data_features/data.code_%s.%s.extract_feature.csv" % (
             dataset_base_dir, code, last_cal_date)
@@ -183,13 +192,11 @@ if __name__ == "__main__":
                     master_df_data = pydash.concat(master_df_data, minites_data.values.tolist())
 
             if pydash.is_empty(master_df_data):
+                print("Code %06d's master_df_data is None" % code)
                 continue
 
             master_df = pd.DataFrame(master_df_data, columns=master_df_cols)
 
             df_features = do_extract_feature(spark, master_df, daily_data, csv_path_features)
 
-        all_df_features_values.append(df_features)
-
     print("start", start)
-    exit()
