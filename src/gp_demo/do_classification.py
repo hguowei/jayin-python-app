@@ -39,9 +39,16 @@ clf = RandomForestClassifier(n_estimators=100, max_depth=2,
 clf.fit(X_train, y_train)
 
 # print(clf.feature_importances_)
+joblib.dump(clf, model_path)
 
 from sklearn.metrics import classification_report
 
 y_pred = clf.predict(X_test)
 
+print(classification_report(y_test, y_pred))
+
+loaded_clf = joblib.load(model_path)
+
+y_pred = loaded_clf.predict(X_test)
+print("Loaded model!")
 print(classification_report(y_test, y_pred))

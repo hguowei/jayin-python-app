@@ -51,7 +51,7 @@ if __name__ == "__main__":
         if all_df_features_cols is None:
             all_df_features_cols = df_features.columns.tolist()
         all_df_features_values.extend(df_features.values.tolist())
-        if idx % 10 == 0:
+        if idx % 10 == 500 and idx > 490:
             csv_path = "%s/gp_data/data.%s.to_train.ckpt_%d.csv" % (dataset_base_dir, last_cal_date, idx)
             tmp_df = pd.DataFrame(all_df_features_values, columns=all_df_features_cols)
             print("Saving checkpoint to '%s'!" % csv_path)
