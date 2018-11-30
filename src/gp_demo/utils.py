@@ -32,4 +32,4 @@ def get_codes():
     return df["symbol"].tolist()
 
 def get_train_data_csv_path(last_cal_date):
-    return "%s/gp_data/data.%s.to_train.csv" % (dataset_base_dir, last_cal_date)
+    return "%s/data_to_train/data.%s.to_train.csv" % (dataset_base_dir, last_cal_date)

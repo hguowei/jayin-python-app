@@ -3,9 +3,9 @@ import pandas as pd
 from sklearn.cross_validation import train_test_split
 from sklearn.metrics import classification_report
 
-csv_path = "/Users/huang/share/data/gp_data/data.20181124.to_train.ckpt_840.csv"
+csv_path = "/Users/huang/share/data/data_to_train/data.20181124.to_train.ckpt_840.csv"
 model_path = "%s.model_rf.pkl" % csv_path
-csv_path = "/Users/huang/share/data/gp_data/data.20181124.to_train.ckpt_810.csv"
+csv_path = "/Users/huang/share/data/data_to_train/data.20181124.to_train.ckpt_810.csv"
 
 iris = pd.read_csv(csv_path)
 

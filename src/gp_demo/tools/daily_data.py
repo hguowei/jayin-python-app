@@ -100,7 +100,7 @@ def get_daily_data(code, start_string="2018-01-01", just_download=False):
     now_date = datetime.now()
     ktype = "D"
     _end_string = to_query_date(now_date)
-    csv_path = "%s/data/data.%s.%s.csv" % (dataset_base_dir, code, ktype)
+    csv_path = "%s/tushare_data/data.%s.%s.csv" % (dataset_base_dir, code, ktype)
     result_data = None
 
     if just_download and os.path.exists(csv_path):

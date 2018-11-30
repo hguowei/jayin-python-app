@@ -37,7 +37,7 @@ if __name__ == "__main__":
     idx = 0
     for code in codes:
         idx += 1
-        csv_path_features = "%s/data_train/data.code_%s.%s.extract_feature.csv" % (
+        csv_path_features = "%s/data_features/data.code_%s.%s.extract_feature.csv" % (
             dataset_base_dir, code, last_cal_date)
         if os.path.exists(csv_path_features):
             try:
@@ -52,7 +52,7 @@ if __name__ == "__main__":
             all_df_features_cols = df_features.columns.tolist()
         all_df_features_values.extend(df_features.values.tolist())
         if idx % 10 == 500 and idx > 490:
-            csv_path = "%s/gp_data/data.%s.to_train.ckpt_%d.csv" % (dataset_base_dir, last_cal_date, idx)
+            csv_path = "%s/data_to_train/data.%s.to_train.ckpt_%d.csv" % (dataset_base_dir, last_cal_date, idx)
             tmp_df = pd.DataFrame(all_df_features_values, columns=all_df_features_cols)
             print("Saving checkpoint to '%s'!" % csv_path)
             tmp_df.to_csv(csv_path, index=False)

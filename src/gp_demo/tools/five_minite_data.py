@@ -12,7 +12,7 @@ print(pydash.__version__)
 
 
 def get_minite_csv_path(code, ktype, quering_date):
-    return "%s/data/data.%s.%s.%s.csv" % (dataset_base_dir, code, ktype, quering_date)
+    return "%s/tushare_data/data.%s.%s.%s.csv" % (dataset_base_dir, code, ktype, quering_date)
 
 
 def get_query_data(data, query_date):

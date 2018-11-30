@@ -14,7 +14,7 @@ from sklearn.metrics import mean_squared_error, r2_score
 
 import pandas as pd
 
-csv_path = "/Users/huang/share/data/gp_data/data.20181124.to_train.ckpt_180.csv"
+csv_path = "/Users/huang/share/data/data_to_train/data.20181124.to_train.ckpt_180.csv"
 iris = pd.read_csv(csv_path)
 
 label = "label"

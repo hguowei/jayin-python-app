@@ -154,7 +154,7 @@ if __name__ == "__main__":
     print("minites_data", minites_data)
     exit()
     for idx, code in enumerate(codes):
-        csv_path_features = "%s/data_train/data.code_%s.%s.extract_feature.csv" % (
+        csv_path_features = "%s/data_features/data.code_%s.%s.extract_feature.csv" % (
             dataset_base_dir, code, last_cal_date)
         if os.path.exists(csv_path_features):
             try:

@@ -6,11 +6,11 @@ print(__doc__)
 # Code source: Jaques Grobler
 # License: BSD 3 clause
 
-
+import joblib
 import pandas as pd
 
-csv_path = "/Users/huang/share/data/gp_data/data.20181124.to_train.ckpt_180.csv"
-csv_path = '/Users/huang/share/data/gp_data/data.20181129.to_train.csv'
+csv_path = "/Users/huang/share/data/data_to_train/data.20181124.to_train.ckpt_180.csv"
+csv_path = '/Users/huang/share/data/data_to_train/data.20181129.to_train.csv'
 iris = pd.read_csv(csv_path)
 
 label = "label"
@@ -38,6 +38,7 @@ clf = RandomForestClassifier(n_estimators=100, max_depth=2,
                              random_state=0)
 clf.fit(X_train, y_train)
 
+model_path = "test_model.pkl"
 # print(clf.feature_importances_)
 joblib.dump(clf, model_path)
 

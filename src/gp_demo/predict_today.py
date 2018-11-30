@@ -151,7 +151,7 @@ if __name__ == "__main__":
 
     codes = codes[-1:]
     for idx, code in enumerate(codes):
-        csv_path_features = "data_result/data.%s.%s.result.csv" % (code, last_cal_date)
+        csv_path_features = "%s/data_merge_result/data.%s.%s.result.csv" % (dataset_base_dir, code, last_cal_date)
         daily_data = get_daily_data(code, just_download=False)
         if daily_data is None:
             continue

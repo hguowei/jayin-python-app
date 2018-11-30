@@ -60,7 +60,7 @@ def do_extract_feature_before230(master_df, csv_path_features=None):
 
 
 def get_model():
-    csv_path = "/Users/huang/share/data/gp_data/data.20181124.to_train.ckpt_840.csv"
+    csv_path = "/Users/huang/share/data/data_to_train/data.20181124.to_train.ckpt_840.csv"
     model_path = "%s.model_rf.pkl" % csv_path
 
     return joblib.load(model_path)
@@ -86,7 +86,7 @@ if __name__ == "__main__":
     codes = np.random.rand(codes)
     print("codes", codes)
     for idx, code in enumerate(codes):
-        csv_path_features = "%s/gp_data/data.code_%s.%s.csv" % (dataset_base_dir, code, quering_date)
+        csv_path_features = "%s/data_to_train/data.code_%s.%s.csv" % (dataset_base_dir, code, quering_date)
         if os.path.exists(csv_path_features):
             try:
                 df_features = pd.read_csv(csv_path_features)
