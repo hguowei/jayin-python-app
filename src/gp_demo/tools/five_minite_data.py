@@ -51,7 +51,7 @@ def query_minite_data(code, query_date, ktype, is_print=True):
                               end=start_date_string,
                               ktype=ktype)
 
-    result = pydash.chain(data["Date"].tolist()).group_by(lambda d: d).values().map(
+    result = pydash.chain(data["date"].tolist()).group_by(lambda d: d).values().map(
         lambda key: (key[0], len(key))).value()
     for tmp_date, count in result:
         if count == int(4 * 60 / 5):

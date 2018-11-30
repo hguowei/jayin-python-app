@@ -46,6 +46,7 @@ if __name__ == "__main__":
                 print("rm", csv_path_features)
                 raise e
         else:
+            print("No exists '%s'!" % csv_path_features)
             continue
         if all_df_features_cols is None:
             all_df_features_cols = df_features.columns.tolist()

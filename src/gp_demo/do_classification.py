@@ -10,6 +10,7 @@ print(__doc__)
 import pandas as pd
 
 csv_path = "/Users/huang/share/data/gp_data/data.20181124.to_train.ckpt_180.csv"
+csv_path = '/Users/huang/share/data/gp_data/data.20181129.to_train.csv'
 iris = pd.read_csv(csv_path)
 
 label = "label"

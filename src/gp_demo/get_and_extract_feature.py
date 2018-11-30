@@ -2,6 +2,10 @@ import os
 import time
 from datetime import datetime
 
+import os
+
+os.environ["PYSPARK_PYTHON"] = "/Users/huang/anaconda2/envs/py36/bin/python"
+
 import pandas as pd
 import pydash
 from pyspark.sql import SparkSession
@@ -129,21 +133,25 @@ if __name__ == "__main__":
     # codes = [538]
     # codes = pydash.reverse(codes)
 
-    all = list(range(0, 35))
+    all = list(range(0, 37))
     # [4, 6, 9, 13, 14, 18, 24]
-    all = [4, 9, 24]
-    all = [24]
-    good = [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15, 16, 17, 19, 20, 21, 22, 23, 25, 26, 27, 28, 29, 30, 31,
-            32, 33, 34, 35]
+    # all = []
+    good = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28,
+            29, 30, 31, 32, 33, 34, 35]
     todo = pydash.difference(all, good)
     print("todo", todo)
-
-    start = todo[0]
-    start = 38
+    # start = todo[0]
+    start = 0
     step = 100
     print("start", start)
-    # codes = codes[start * step:start * step + step]
+    codes = codes[start * step:start * step + step]
 
+    code = 61
+    quering_date = "2018-11-29"
+    minites_data = get_min_data(code, quering_date=quering_date, is_for_train_not_eval=True,
+                                just_download=False)
+    print("minites_data", minites_data)
+    exit()
     for idx, code in enumerate(codes):
         csv_path_features = "%s/data_train/data.code_%s.%s.extract_feature.csv" % (
             dataset_base_dir, code, last_cal_date)
@@ -165,7 +173,7 @@ if __name__ == "__main__":
                                                 just_download=False)
                 except:
                     minites_data = None
-                # print("Done", idx, code, quering_date, "minites data is None?", minites_data is None)
+                print("Done", idx, code, quering_date, "minites data is None?", minites_data is None)
 
                 if minites_data is not None:
                     if master_df_cols is None:
@@ -184,6 +192,3 @@ if __name__ == "__main__":
 
     print("start", start)
     exit()
-    csv_path_to_train = get_train_data_csv_path(last_cal_date)
-    to_train_df = pd.DataFrame(all_df_features_values, columns=all_df_features_cols)
-    to_train_df.to_csv(csv_path_to_train, index=False)
