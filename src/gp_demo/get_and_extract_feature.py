@@ -26,6 +26,7 @@ def do_extract_feature(spark, master_df, df_day, csv_path_features=None):
     first_date = pd.Timestamp(master_df["date"][0]) + pd.offsets.Hour(7)
 
     master_df["date"] = master_df["date"].apply(pd.Timestamp)
+    # TODO CANNOT FILTER THIS.!!!!
     master_df = master_df[master_df["date"].apply(pd.Timestamp) > first_date]
 
     # Get the time before 2:30

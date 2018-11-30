@@ -1,17 +1,11 @@
 import joblib
-from sklearn.cross_validation import train_test_split
-from sklearn.ensemble import RandomForestClassifier
-
-print(__doc__)
-
-# Code source: Jaques Grobler
-# License: BSD 3 clause
-
-
 import pandas as pd
+from sklearn.cross_validation import train_test_split
+from sklearn.metrics import classification_report
 
 csv_path = "/Users/huang/share/data/gp_data/data.20181124.to_train.ckpt_840.csv"
 model_path = "%s.model_rf.pkl" % csv_path
+csv_path = "/Users/huang/share/data/gp_data/data.20181124.to_train.ckpt_810.csv"
 
 iris = pd.read_csv(csv_path)
 
@@ -36,21 +30,8 @@ y = diabetes_y_train
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.33, random_state=42)
 
-clf = RandomForestClassifier(n_estimators=100, max_depth=2,
-                             random_state=0)
-clf.fit(X_train, y_train)
-
-# print(clf.feature_importances_)
-joblib.dump(clf, model_path)
-
-from sklearn.metrics import classification_report
-
-y_pred = clf.predict(X_test)
-
-print(classification_report(y_test, y_pred))
-
 loaded_clf = joblib.load(model_path)
 
 y_pred = loaded_clf.predict(X_test)
-print("Loaded model!")
+
 print(classification_report(y_test, y_pred))

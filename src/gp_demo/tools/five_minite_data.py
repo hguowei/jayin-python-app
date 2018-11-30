@@ -29,7 +29,7 @@ def get_query_data(data, query_date):
     return data[is_query_date(data)]
 
 
-def query_minite_data(code, query_date, ktype, is_print=True):
+def query_minite_data(code, query_date, ktype, is_print=True, is_saving_others=True):
     '''
     :param code:
     :param query_date:
@@ -45,22 +45,24 @@ def query_minite_data(code, query_date, ktype, is_print=True):
     else:
         start_date_string = query_date
 
+    minite_csv_path = get_minite_csv_path(code, ktype, start_date_string)
+
     # print("Quering ", code, " from", start_date_string, start_date_string, ktype)
     data = tushare.get_k_data(code=code,
                               start=start_date_string,
                               end=start_date_string,
                               ktype=ktype)
 
-    result = pydash.chain(data["Date"].tolist()).group_by(lambda d: d).values().map(
+    result = pydash.chain(data["date"].tolist()).group_by(lambda d: d).values().map(
         lambda key: (key[0], len(key))).value()
     for tmp_date, count in result:
-        if count == int(4 * 60 / 5):
+        if is_saving_others and count == int(4 * 60 / 5):
             print("tmp_date", tmp_date)
-            get_query_data(data, tmp_date).to_csv(get_minite_csv_path(code, ktype, tmp_date), index=False)
+            get_query_data(data, tmp_date).to_csv(minite_csv_path, index=False)
 
     data = get_query_data(data, query_date)
     if data is None or (isinstance(data, pd.DataFrame) and data.empty):
-        return []
+        return None
     else:
         return data
 
@@ -108,7 +110,7 @@ def get_min_data(code, quering_date, is_for_train_not_eval=True, just_download=F
 
     query_data = query_minite_data(code, quering_date, ktype)
 
-    if query_data is None or pydash.is_empty(query_data):
+    if query_data is None or query_data.empty:
         return None
 
     if just_download and is_can_return(query_data):
