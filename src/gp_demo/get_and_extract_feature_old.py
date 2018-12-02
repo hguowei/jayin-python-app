@@ -2,7 +2,7 @@ import os
 import time
 from datetime import datetime
 
-from feature_tools import do_extract_feature
+from tools.feature_tools import do_extract_feature
 
 os.environ["PYSPARK_PYTHON"] = "/Users/huang/anaconda2/envs/py36/bin/python"
 
@@ -35,7 +35,7 @@ if __name__ == "__main__":
     now_date = datetime.now()
 
     trade_cal = get_trade_cal_list()
-    cal_date = trade_cal[-30:-1]
+    cal_date = trade_cal[-15:-1]
     last_cal_date = cal_date[-1]
     print("cal_date", cal_date)
 
@@ -49,10 +49,10 @@ if __name__ == "__main__":
     # all = []
     good = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28,
             29, 30, 31, 32, 33, 34, 35]
-    todo = pydash.difference(all, good)
-    print("todo", todo)
-    # start = todo[0]
-    start = 13
+    todo_list = pydash.difference(all, good)
+    print("todo_list", todo_list)
+    # start = todo_list[0]
+    start = 5
     step = 100
     print("start", start)
     codes = codes[start * step:start * step + step]

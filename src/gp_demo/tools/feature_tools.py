@@ -14,6 +14,8 @@ def do_extract_feature(spark, master_df, df_day, csv_path_features=None):
         if os.path.exists(csv_path_features):
             return pd.read_csv(csv_path_features)
 
+    # print("master_df", master_df)
+    # print("df_day", df_day)
     master_df["date"] = master_df["date"].apply(pd.Timestamp)
 
     def code_to_string(code):
@@ -27,24 +29,18 @@ def do_extract_feature(spark, master_df, df_day, csv_path_features=None):
     # Get the time before 2:30
     X_endtime = 14 * 60 + 30
 
-    def filter_before230(date, is_filter_before=True):
+    def filter_before230(date):
         val1 = (date.hour * 60 + date.minute)
         # print("date", date, val1, X_endtime, val1 <= X_endtime)
         before_230 = val1 <= X_endtime
-        if is_filter_before:
-            return before_230
-        else:
-            return not before_230
+        return before_230
 
-    date_list = master_df["date"].tolist()
-    # print("date_list", date_list)
+    master_date_list = master_df["date"].tolist()
 
-    is_before = pydash.map_(date_list, lambda x: filter_before230(x, True))
+    is_before = pydash.map_(master_date_list, lambda x: filter_before230(x))
     master_df_before_230 = master_df[is_before]
-    is_after = pydash.map_(date_list, lambda x: filter_before230(x, False))
-    master_df_after_230 = master_df[is_after]
-    # print("master_df_after_230")
-    # print(master_df_after_230)
+    # print("master_df_before_230")
+    # print(master_df_before_230)
 
     trade_day_list = df_day["date"].tolist()
     trade_day_open = df_day["open"].tolist()
@@ -65,19 +61,55 @@ def do_extract_feature(spark, master_df, df_day, csv_path_features=None):
 
     master_df_before_230 = master_df_before_230.drop(['date', 'code'], axis=1)
 
+    date_record_count_dict = pydash.chain(master_df_before_230["new_date"].tolist()).count_by().value()
+
+    extracting_date_list = []
+    for key in date_record_count_dict.keys():
+        value = date_record_count_dict[key]
+        if value >= 42:
+            extracting_date_list.append(key)
+        pass
+
+    if len(extracting_date_list) == 0:
+        return None
+
+    def filter_after230_and_to_cal(tmp_date):
+        new_date_string = "%4d-%02d-%02d" % (tmp_date.year, tmp_date.month, tmp_date.day)
+        if not pydash.includes(extracting_date_list, new_date_string):
+            return False
+        val1 = (tmp_date.hour * 60 + tmp_date.minute)
+        # print("date", date, val1, X_endtime, val1 <= X_endtime)
+        before_230 = val1 <= X_endtime
+        return not before_230
+
+    is_after = pydash.map_(master_date_list, lambda x: filter_after230_and_to_cal(x))
+    master_df_after_230 = master_df[is_after]
+
+    # print("master_df_after_230")
+    # print(master_df_after_230)
+
     def map_func(kv):
         tmp_date = kv[0]
         row_list = kv[1]
         import pydash
 
         new_date_string = "%4d-%02d-%02d" % (tmp_date.year, tmp_date.month, tmp_date.day)
+        if not pydash.includes(extracting_date_list, new_date_string):
+            return []
         next_day_open = pydash.get(next_day_open_dict, new_date_string, 0)
 
         if next_day_open > 0:
             max_value = pydash.chain(row_list).map(lambda row: row.close).max().value()
             # print("row_list", list(row_list))
             # print("max_value", max_value)
-            return [[new_date_string, (next_day_open - max_value) / max_value]]
+            label = (next_day_open - max_value) / max_value
+            # tmp_dict = {
+            #     "date": new_date_string,
+            #     "label":label
+            # }
+            # print("new_date_string",new_date_string)
+            # print()
+            return [[new_date_string, label]]
         else:
             return []
 
@@ -102,15 +134,20 @@ def do_extract_feature(spark, master_df, df_day, csv_path_features=None):
     result = pd.Series(value_list, index=date_list)
 
     extraction_settings = ComprehensiveFCParameters()
+    # try:
     extract_result = extract_features(master_df_before_230,
                                       column_id="new_date",
                                       impute_function=impute,
                                       default_fc_parameters=extraction_settings)
+    # except Exception as e:
+    #     print("EEEEEEEEEEEEEE master_df_defore_230")
+    #     print(master_df_before_230)
+    #     raise e
 
     extract_result["label"] = result
     extract_result = extract_result.dropna()
 
     if csv_path_features is not None:
-        extract_result.to_csv(csv_path_features, index=False)
+        extract_result.to_csv(csv_path_features, index=True)
 
     return extract_result

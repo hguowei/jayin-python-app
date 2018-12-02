@@ -1,9 +1,31 @@
+import pandas as pd
 import pydash
 from pyspark.sql import SparkSession
 
-from feature_tools import do_extract_feature
+from tools.feature_tools import do_extract_feature
 from tools.daily_data import get_daily_data
 from tools.five_minite_data import get_min_data
+
+
+def test1():
+    csv_path_features = "/Users/huang/share/data/data_features/data.code_2674.20181129.extract_feature.csv"
+    csv_path_features = "test.csv"
+    data = pd.read_csv(csv_path_features)
+    for feature in data.columns.tolist():
+        if pydash.starts_with(feature, "close"):
+            continue
+        if pydash.starts_with(feature, "open"):
+            continue
+        if pydash.starts_with(feature, "volume"):
+            continue
+        if pydash.starts_with(feature, "low"):
+            continue
+        if pydash.starts_with(feature, "high"):
+            continue
+        print("feature", data[feature])
+    exit()
+
+test1()
 
 spark = SparkSession.builder \
     .master("local") \
@@ -11,9 +33,9 @@ spark = SparkSession.builder \
     .config("spark.some.config.option", "some-value") \
     .getOrCreate()
 
-code = "000957"
+code = "300017"
 quering_date = "2018-11-29"
-csv_path_features = None
+csv_path_features = "test.csv"
 
 daily_data = get_daily_data(code, just_download=False)
 print("daily_data")
