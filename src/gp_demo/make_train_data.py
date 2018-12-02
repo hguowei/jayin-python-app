@@ -27,7 +27,7 @@ if __name__ == "__main__":
     print("len(codes)", len(codes))
     now_date = datetime.now()
 
-    trade_cal = get_trade_cal_list(now_date)
+    trade_cal = get_trade_cal_list()
     cal_date = trade_cal[-31:-1]
     last_cal_date = cal_date[-1]
 
