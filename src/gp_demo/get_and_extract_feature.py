@@ -35,10 +35,9 @@ if __name__ == "__main__":
     now_date = datetime.now()
 
     trade_cal = get_trade_cal_list()
-    cal_date = trade_cal[-31:-1]
+    cal_date = trade_cal[-30:-1]
     last_cal_date = cal_date[-1]
     print("cal_date", cal_date)
-    exit()
 
     all_df_features_values = []
     all_df_features_cols = None
@@ -53,7 +52,7 @@ if __name__ == "__main__":
     todo = pydash.difference(all, good)
     print("todo", todo)
     # start = todo[0]
-    start = 7
+    start = 13
     step = 100
     print("start", start)
     codes = codes[start * step:start * step + step]

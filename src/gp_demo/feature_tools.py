@@ -44,7 +44,7 @@ def do_extract_feature(spark, master_df, df_day, csv_path_features=None):
     is_after = pydash.map_(date_list, lambda x: filter_before230(x, False))
     master_df_after_230 = master_df[is_after]
     # print("master_df_after_230")
-    print(master_df_after_230)
+    # print(master_df_after_230)
 
     trade_day_list = df_day["date"].tolist()
     trade_day_open = df_day["open"].tolist()
