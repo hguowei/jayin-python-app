@@ -35,27 +35,14 @@ if __name__ == "__main__":
     now_date = datetime.now()
 
     trade_cal = get_trade_cal_list()
-    cal_dates = trade_cal[-13:-1]
+    cal_dates = trade_cal[-11:-1]
     last_cal_date = cal_dates[-1]
     print("cal_dates", cal_dates)
 
-    all_df_features_values = []
-    all_df_features_cols = None
-    # codes = [538]
-    # codes = pydash.reverse(codes)
-
-    all = list(range(0, 37))
-    # [4, 6, 9, 13, 14, 18, 24]
-    # all = []
-    good = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28,
-            29, 30, 31, 32, 33, 34, 35]
-    todo_list = pydash.difference(all, good)
-    print("todo_list", todo_list)
-    # start = todo_list[0]
-    start = 5
+    start = 0
     step = 100
     print("start", start)
-    codes = codes[start * step:start * step + step]
+    # codes = codes[start * step:start * step + step]
 
     # cal_dates = [20181116]
     # codes = [1]
@@ -70,7 +57,9 @@ if __name__ == "__main__":
                 print("rm", csv_path_daily_features)
                 raise e
 
-        daily_data = None
+        master_df_cols = []
+        master_df_data = None
+        daily_data_dict = {}
         for code in codes:
             csv_path_features = "%s/code_daily_features/code_%s.date_%s.features.csv" % (
                 dataset_base_dir, code, quering_date)
@@ -81,9 +70,11 @@ if __name__ == "__main__":
                     print("rm", csv_path_features)
                     raise e
             else:
+                # for each code.
+                daily_data = pydash.get(daily_data_dict, code, None)
                 if daily_data is None:
-                    # for each code.
                     daily_data = get_daily_data(code, just_download=False)
+                    daily_data_dict[code] = daily_data
 
                 if daily_data is None:
                     print("ERROR, cannot get daily data of code='%s'!" % code)
@@ -99,4 +90,14 @@ if __name__ == "__main__":
                     continue
                 df_features = do_extract_feature(spark, minites_data, daily_data, csv_path_features)
 
+            if df_features is not None:
+                if master_df_cols is None:
+                    master_df_cols = df_features.columns.tolist()
+                if master_df_data is None:
+                    master_df_data = df_features.values.tolist()
+                else:
+                    master_df_data = pydash.concat(master_df_data, df_features.values.tolist())
+        # end for code in codes:
+        daily_features = pd.DataFrame(master_df_data, columns=master_df_cols)
+        daily_features.to_csv(csv_path_daily_features, index=False)
     print("start", start)

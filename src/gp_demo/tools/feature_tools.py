@@ -1,5 +1,7 @@
 import os
 
+from src.gp_demo import dataset_base_dir
+
 os.environ["PYSPARK_PYTHON"] = "/Users/huang/anaconda2/envs/py36/bin/python"
 
 import pandas as pd
@@ -151,3 +153,11 @@ def do_extract_feature(spark, master_df, df_day, csv_path_features=None):
         extract_result.to_csv(csv_path_features, index=True)
 
     return extract_result
+
+
+def save_daily_features_data(extract_result):
+    new_date_list = pydash.uniq(extract_result["id"].tolist())
+    new_date_list = pydash.uniq(extract_result["code"].tolist())
+    for new_date in new_date_list:
+        partial_data = extract_result[extract_result["id"] == new_date]
+    pass
