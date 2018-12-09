@@ -9,9 +9,8 @@ from tsfresh import extract_features
 from tsfresh.feature_extraction import ComprehensiveFCParameters
 from tsfresh.utilities.dataframe_functions import impute
 
-from src.gp_demo import dataset_base_dir
 from tools.five_minite_data import get_min_data
-from utils import get_codes
+from utils import get_codes, get_csv_path_feature
 
 
 def do_extract_feature_before230(master_df, csv_path_features=None):
@@ -60,10 +59,12 @@ def do_extract_feature_before230(master_df, csv_path_features=None):
 
 
 def get_model():
-    csv_path = "/Users/huang/share/data/data_to_train/data.20181124.to_train.ckpt_840.csv"
-    model_path = "%s.model_rf.pkl" % csv_path
+    percentage = 0.01
+    model_path = "test_model.%.2f.pkl" % percentage
+    percentage = 0.02
+    model_path2 = "test_model.%.2f.pkl" % percentage
 
-    return joblib.load(model_path)
+    return joblib.load(model_path), joblib.load(model_path2)
 
 
 if __name__ == "__main__":
@@ -78,15 +79,16 @@ if __name__ == "__main__":
     print("len(codes)", len(codes))
     now_date = datetime.now()
 
-    model = get_model()
-    quering_date = "20181122"
+    model, model2 = get_model()
+    quering_date = "20181207"
 
     result_list = []
-    import numpy as np
-    codes = np.random.rand(codes)
-    print("codes", codes)
+
+    # codes = np.random.rand(codes)
+    codes = codes[:100]
+    # print("codes", codes)
     for idx, code in enumerate(codes):
-        csv_path_features = "%s/data_to_train/data.code_%s.%s.csv" % (dataset_base_dir, code, quering_date)
+        csv_path_features = get_csv_path_feature(code, quering_date)
         if os.path.exists(csv_path_features):
             try:
                 df_features = pd.read_csv(csv_path_features)
@@ -104,12 +106,21 @@ if __name__ == "__main__":
 
             df_features = do_extract_feature_before230(master_df, csv_path_features)
 
-            # print("df_features", df_features.columns)
-            # print(df_features)
-            result = model.predict(df_features)
-            if result[0] == 1:
-                print("code", code, quering_date)
-                result_list.append((code, quering_date))
+        # print("df_features", df_features.columns)
+        # print(df_features)
+        result = model.predict(df_features)
+        if result[0] == 1:
+            prob = model.predict_proba(df_features)[0][1]
+            prob2 = model2.predict_proba(df_features)[0][1]
+            tmp = code, quering_date, prob, prob2
+            print("code", tmp)
+            result_list.append(tmp)
 
-    for kv in result_list:
-        print("code", kv[0], "query_date", kv[1])
+    if len(result_list) > 0:
+        df = pd.DataFrame(result_list, columns=["code", "date", "prob_0.01", "prob_0.02"])
+        result_csv = "result_%s.csv" % quering_date
+        print("result_csv", result_csv)
+        df.to_csv(result_csv, index=False)
+
+    for tmp_list in result_list:
+        print(tmp_list)

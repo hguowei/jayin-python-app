@@ -11,7 +11,7 @@ from tsfresh.feature_extraction import ComprehensiveFCParameters
 from tsfresh.utilities.dataframe_functions import impute
 
 
-def do_extract_feature(spark, master_df, df_day, csv_path_features=None):
+def do_extract_feature(spark, master_df, df_day=None, csv_path_features=None):
     if csv_path_features is not None:
         if os.path.exists(csv_path_features):
             return pd.read_csv(csv_path_features)
@@ -44,11 +44,6 @@ def do_extract_feature(spark, master_df, df_day, csv_path_features=None):
     # print("master_df_before_230")
     # print(master_df_before_230)
 
-    trade_day_list = df_day["date"].tolist()
-    trade_day_open = df_day["open"].tolist()
-    next_day_open_dict = dict(zip(trade_day_list[:-1], trade_day_open[1:]))
-    # print("next_day_open_dict", next_day_open_dict)
-
     # Get the time before 2:30
     X_endtime = 14 * 60 + 30
 
@@ -74,6 +69,20 @@ def do_extract_feature(spark, master_df, df_day, csv_path_features=None):
 
     if len(extracting_date_list) == 0:
         return None
+
+    extraction_settings = ComprehensiveFCParameters()
+    extract_result = extract_features(master_df_before_230,
+                                      column_id="new_date",
+                                      impute_function=impute,
+                                      default_fc_parameters=extraction_settings)
+    if df_day is None:
+        return extract_result
+    ###### deal after
+
+    trade_day_list = df_day["date"].tolist()
+    trade_day_open = df_day["open"].tolist()
+    next_day_open_dict = dict(zip(trade_day_list[:-1], trade_day_open[1:]))
+    # print("next_day_open_dict", next_day_open_dict)
 
     def filter_after230_and_to_cal(tmp_date):
         new_date_string = "%4d-%02d-%02d" % (tmp_date.year, tmp_date.month, tmp_date.day)
@@ -135,16 +144,6 @@ def do_extract_feature(spark, master_df, df_day, csv_path_features=None):
 
     result = pd.Series(value_list, index=date_list)
 
-    extraction_settings = ComprehensiveFCParameters()
-    # try:
-    extract_result = extract_features(master_df_before_230,
-                                      column_id="new_date",
-                                      impute_function=impute,
-                                      default_fc_parameters=extraction_settings)
-    # except Exception as e:
-    #     print("EEEEEEEEEEEEEE master_df_defore_230")
-    #     print(master_df_before_230)
-    #     raise e
 
     extract_result["label"] = result
     extract_result = extract_result.dropna()
