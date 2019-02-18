@@ -31,13 +31,21 @@ if __name__ == "__main__":
 
     print("codes", len(codes), codes)
 
-    quering_date = "20181126"
+    quering_date = "20181212"
     model, model2 = get_model()
     result_list = []
 
     inner_start_time = time.time()
     # codes = codes[:100]
+    codes = pydash.filter_(codes, lambda code: code >= 300000 and code <= 399999)
+
+    # 17 - 23?
+    start = 26
+    step = 100
+    print("start", start)
+    codes = codes[start * step:start * step + step]
     for code in codes:
+        print("code", code)
         # csv_path_features = "%s/code_daily_features/code_%s.date_%s.features.csv" % (
         #     dataset_base_dir, code, quering_date)
         csv_path_features = get_csv_path_feature(code, quering_date)
@@ -53,7 +61,7 @@ if __name__ == "__main__":
                                             just_download=False)
             except:
                 minites_data = None
-            print("Done", quering_date, code, "minites data is None?", minites_data is None)
+            # print("Done", quering_date, code, "minites data is None?", minites_data is None)
 
             if minites_data is None or (isinstance(minites_data, pd.DataFrame) and minites_data.empty):
                 continue
@@ -72,12 +80,12 @@ if __name__ == "__main__":
             prob = model.predict_proba(df_features)[0][1]
             prob2 = model2.predict_proba(df_features)[0][1]
             tmp = code, quering_date, prob, prob2
-            print("code", tmp)
+            print("\n\n\n\nPredicted: ", tmp)
             result_list.append(tmp)
 
     if len(result_list) > 0:
         df = pd.DataFrame(result_list, columns=["code", "date", "prob_0.01", "prob_0.02"])
-        result_csv = "result_%s.csv" % quering_date
+        result_csv = "result_%s.%d.csv" % (quering_date, start)
         print("result_csv", result_csv)
         df.to_csv(result_csv, index=False)
     else:

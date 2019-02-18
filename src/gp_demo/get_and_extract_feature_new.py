@@ -36,6 +36,8 @@ if __name__ == "__main__":
 
     trade_cal = get_trade_cal_list()
     cal_dates = trade_cal[-11:-1]
+    cal_dates = pydash.reverse(cal_dates)
+
     last_cal_date = cal_dates[-1]
     print("cal_dates", cal_dates)
 
@@ -50,8 +52,8 @@ if __name__ == "__main__":
     # cal_dates = cal_dates[start * step:start * step + step]
     # codes = [1]
 
-    # cal_dates = pydash.reverse(cal_dates)
-    # cal_dates = ["20181130"]
+    #
+    cal_dates = ["20190118"]
     print("cal_dates", len(cal_dates), cal_dates)
     print("codes", len(codes), codes)
     for quering_date in cal_dates:

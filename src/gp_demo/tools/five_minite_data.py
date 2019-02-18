@@ -29,7 +29,7 @@ def get_query_data(data, query_date):
     return data[is_query_date(data)]
 
 
-def query_minite_data(code, query_date, ktype, is_print=True, is_saving_others=True):
+def query_minite_data(code, query_date, ktype, is_print=False, is_saving_others=True):
     '''
     :param code:
     :param query_date:
