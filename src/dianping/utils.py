@@ -1,5 +1,6 @@
 import codecs
 import datetime
+import os
 import random
 import time
 
@@ -66,3 +67,12 @@ def read_file(path):
 
 def to_string(element):
     return etree.tostring(element, encoding="utf-8", pretty_print=True)[:-1].decode("utf-8")
+
+
+def list_files(file_dir,suffix):
+    L = []
+    for root, dirs, files in os.walk(file_dir):
+        for file in files:
+            if os.path.splitext(file)[1] == suffix:
+                L.append(os.path.join(root, file))
+    return L

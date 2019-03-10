@@ -1,0 +1,1 @@
+shop_list -> shop -> css -> svg.
