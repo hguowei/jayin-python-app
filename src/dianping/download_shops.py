@@ -22,3 +22,5 @@ for shop_id, shop_url in zip(data["shop_id"].tolist(), data["shop_url"].tolist()
 
     with open(html_path, 'wb') as f:
         f.write(html)
+
+

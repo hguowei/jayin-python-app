@@ -52,8 +52,8 @@ def get_css_links(html):
     return css_links
 
 
-for file_path in files[:1]:
-    file_path = "htmls/18766328.html"
+for file_path in files:
+    # file_path = "htmls/18766328.html"
     print("file_path", file_path)
     html = read_html(path=file_path)
     print("html", html)

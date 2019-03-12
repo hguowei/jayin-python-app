@@ -1,5 +1,6 @@
 import json
 import xml.sax
+import os
 
 
 class PathHandler(xml.sax.ContentHandler):
@@ -51,13 +52,8 @@ class TextPathHandler(xml.sax.ContentHandler):
             self.href_dict[self.href] = self.data
 
 
-if __name__ == "__main__":
-    # 注：文件可能需要手动格式化一下，再解析。
-    svg_file = "/Users/huang/Desktop/workpython/jayin-python-app/src/dianping/svgs/f79fa764d791dca497ca2e3beb79c517.svg"
-    svg_file = "/Users/huang/Desktop/workpython/jayin-python-app/src/dianping/svgs/bf64761f6e0bca109d91f6e31dcd46ce.svg"
+def get_path_dict(svg_file):
     path_dict_file = "%s.path_dict.json" % svg_file
-    href_dict_file = "%s.href_dict.json" % svg_file
-    import os
 
     if not os.path.exists(path_dict_file):
         parser = xml.sax.make_parser()
@@ -72,14 +68,35 @@ if __name__ == "__main__":
             json.dump(handler.path_dict, f)
         print("加载入文件完成...")
 
+        return handler.path_dict
+    else:
+        with open(path_dict_file, 'r') as load_f:
+            return json.load(load_f)
+
+
+def get_href_dict(svg_file):
+    href_dict_file = "%s.href_dict.json" % svg_file
     if not os.path.exists(href_dict_file):
         parser = xml.sax.make_parser()
         parser.setFeature(xml.sax.handler.feature_namespaces, 0)
 
-        handler2 = TextPathHandler()
-        parser.setContentHandler(handler2)
+        handler = TextPathHandler()
+        parser.setContentHandler(handler)
         parser.parse(svg_file)
-        print("href_dict", handler2.href_dict)
+        print("href_dict", handler.href_dict)
         with open(href_dict_file, "w") as f:
-            json.dump(handler2.href_dict, f)
+            json.dump(handler.href_dict, f)
         print("加载入文件完成...")
+        return handler.href_dict
+    else:
+        with open(href_dict_file, 'r') as load_f:
+            return json.load(load_f)
+
+
+if __name__ == "__main__":
+    # 注：文件可能需要手动格式化一下，再解析。
+    svg_file = "/Users/huang/Desktop/workpython/jayin-python-app/src/dianping/svgs/f79fa764d791dca497ca2e3beb79c517.svg"
+    svg_file = "/Users/huang/Desktop/workpython/jayin-python-app/src/dianping/svgs/bf64761f6e0bca109d91f6e31dcd46ce.svg"
+
+    get_href_dict(svg_file)
+    get_path_dict(svg_file)

@@ -78,7 +78,7 @@ def list_files(file_dir, suffix):
     return L
 
 
-def detect_walk(dir_path, suffix):
+def find_file(dir_path, suffix):
     for root, dirs, files in os.walk(dir_path):
         # for filename in files:
         #     print("file:%s\n" % filename)
