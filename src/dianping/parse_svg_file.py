@@ -1,6 +1,6 @@
 import json
-import xml.sax
 import os
+import xml.sax
 
 
 class PathHandler(xml.sax.ContentHandler):
@@ -52,7 +52,35 @@ class TextPathHandler(xml.sax.ContentHandler):
             self.href_dict[self.href] = self.data
 
 
+class TextHandler(xml.sax.ContentHandler):
+    def __init__(self):
+        self.current_data = ""
+        self.x = ""
+        self.y = ""
+        self.data = ""
+        self.href_dict = {}
+
+    def startElement(self, tag, attributes):
+        self.current_data = tag
+        if tag == "text":
+            print("*" * 10, "text", "*" * 10)
+            self.x = attributes["x"]
+            self.y = attributes["y"]
+            todo todo
+
+    def endElement(self, tag):
+        if self.current_data == "textPath":
+            print("Type:", self.href)
+        self.current_data = ""
+
+    def characters(self, content):
+        if self.current_data == "textPath":
+            self.data = content
+            self.href_dict[self.href] = self.data
+
+
 def get_path_dict(svg_file):
+    print("svg_file", svg_file)
     path_dict_file = "%s.path_dict.json" % svg_file
 
     if not os.path.exists(path_dict_file):
@@ -93,10 +121,39 @@ def get_href_dict(svg_file):
             return json.load(load_f)
 
 
+def get_text_dict(svg_file):
+    testing = True
+    text_dict_file = "%s.text_dict.json" % svg_file
+    if testing or not os.path.exists(text_dict_file):
+        parser = xml.sax.make_parser()
+        parser.setFeature(xml.sax.handler.feature_namespaces, 0)
+
+        handler = TextHandler()
+        parser.setContentHandler(handler)
+        parser.parse(svg_file)
+        print("text_dict", handler.text_dict)
+        with open(text_dict_file, "w") as f:
+            json.dump(handler.text_dict, f)
+        print("加载入文件完成...")
+        return handler.text_dict
+    else:
+        with open(text_dict_file, 'r') as load_f:
+            return json.load(load_f)
+
+
+def parse_text():
+    print("TODO parse_text", parse_text)
+    pass
+
+
 if __name__ == "__main__":
     # 注：文件可能需要手动格式化一下，再解析。
     svg_file = "/Users/huang/Desktop/workpython/jayin-python-app/src/dianping/svgs/f79fa764d791dca497ca2e3beb79c517.svg"
     svg_file = "/Users/huang/Desktop/workpython/jayin-python-app/src/dianping/svgs/bf64761f6e0bca109d91f6e31dcd46ce.svg"
 
-    get_href_dict(svg_file)
-    get_path_dict(svg_file)
+    # svg_file = "svgs/2e429b51c0d6dbda8229f44bd237a090.svg"
+    # get_href_dict(svg_file)
+    # get_path_dict(svg_file)
+
+    svg_file = "svgs/ac09bd813a3a57b29cb303da390fd501.svg"
+    get_text_dict(svg_file)

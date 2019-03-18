@@ -78,13 +78,14 @@ def list_files(file_dir, suffix):
     return L
 
 
-def find_file(dir_path, suffix):
-    for root, dirs, files in os.walk(dir_path):
+def find_file(file_dir, suffix):
+    for root, dirs, files in os.walk(file_dir):
         # for filename in files:
         #     print("file:%s\n" % filename)
         # for dirname in dirs:
         #     print("dir:%s\n" % dirname)
+        results = []
         for filename in files:
             if pydash.ends_with(filename, suffix):
-                return "%s/%s" % (root, filename)
-    return None
+                results.append("%s/%s" % (root, filename))
+    return results

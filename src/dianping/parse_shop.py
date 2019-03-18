@@ -10,7 +10,7 @@ import pydash
 from lxml import etree
 import requests
 
-from utils import read_file
+from utils import read_file, to_string
 
 
 def parse_comment_page(doc):
@@ -29,11 +29,26 @@ def parse_comment_page(doc):
         except IndexError:
             star = 0
         time = li.xpath('.//span[@class="time"]/text()')[0].strip('\n\r \t')
-        test = li.xpath('.//p[@class="desc J-desc"]/text()')
+        # test = li.xpath('.//p[@class="desc J-desc"]/text()')
+        # comment = pydash.join(test, "")
+        # print("comment=")
+        # print(comment)
+        test = li.xpath('.//p[@class="desc J-desc"]')
+        print("test", type(test), test)
+        for comment_elem in test:
+            # just one comment.
+            print("comment_elem", type(comment_elem), comment_elem)
+            comment = to_string(comment_elem)
 
-        comment = pydash.join(test, "")
-        print("comment=")
-        print(comment)
+            class_set = set()
+            # <b class="([a-zA-Z0-9]{5,6})"/>
+            for class_name in re.findall(r'<b class="([a-zA-Z0-9]{5,6})"/>', comment):
+                origin_string = '<b class="%s"/>' % class_name
+                print("class_name", class_name, origin_string)
+                class_set.add(class_name)
+
+            print("comment=")
+            print(comment)
 
         score = ' '.join(map(lambda s: s.strip('\n\r \t'), li.xpath('.//span[@class="score"]//text()')))
 
@@ -45,6 +60,8 @@ def parse_comment_page(doc):
             'time': time,
         }
         datas.append(data)
+        print("data", data)
+        exit()
 
     return datas
 
