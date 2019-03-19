@@ -7,8 +7,8 @@ import pydash
 import numpy as np
 
 from class_utils import ClassDict
-from parse_svg_file import get_path_dict, get_href_dict
-from utils import find_file
+from parse_svg_file import get_path_dict, get_href_dict, get_text_dict
+from utils import find_file, to_shorter_file_name
 
 
 def get_one_svg_url(line):
@@ -23,7 +23,7 @@ def get_one_svg_url(line):
 
 
 def get_svg_urls(line):
-    # print("line", line)
+    print("line", line)
     url_str = "url("
     url_index = pydash.index_of(line, url_str)
     if url_index >= 0:
@@ -38,11 +38,40 @@ def get_svg_urls(line):
     return []
 
 
+def get_local_css_file(css_file):
+    if not os.path.exists(css_file):
+        last_idx = pydash.last_index_of(css_file, "/")
+        if last_idx >= 0:
+            file_name = css_file[last_idx + 1:]
+        else:
+            file_name = css_file
+        files = find_file(".", file_name)
+        if files is None or len(files) == 0:
+            print("Cannot found: ", css_file)
+            return css_file
+        else:
+            css_file = files[0]
+    return css_file
+
+
 def read_css_file(css_file):
+    if not os.path.exists(css_file):
+        last_idx = pydash.last_index_of(css_file, "/")
+        if last_idx >= 0:
+            file_name = css_file[last_idx + 1:]
+        else:
+            file_name = css_file
+        files = find_file(".", file_name)
+        if files is None or len(files) == 0:
+            print("Cannot found: ", css_file)
+            return None, None
+        else:
+            css_file = files[0]
+
     f = open(css_file, "r")
     data = f.read()
     f.close()
-    return data
+    return css_file, data
 
 
 def parse_data_to_dict(data):
@@ -92,18 +121,43 @@ def parse_data_to_dict(data):
         i += 1
     return tmp_dict
 
-def parse_css(css_file):
-    print("css_file", css_file)
-    data = read_css_file(css_file)
+
+def get_css_class_dict(css_file):
+    print("css_file1", css_file)
+    css_file = get_local_css_file(css_file)
+    print("css_file2", css_file)
+    # class_dict_file = "%s.class_dict.json" % css_file
+    class_dict_file = to_shorter_file_name(css_file, "class_dict.json")
+    if os.path.exists(class_dict_file):
+        with open(class_dict_file, 'r') as load_f:
+            return json.load(load_f)
+
+    class_to_word = {}
+
+    css_file, data = read_css_file(css_file)
+    if data is None:
+        print("Cannot found css_file", css_file, "!")
+        return {}
     svg_urls = get_svg_urls(data)
 
     # 保存或解析json文件
-    encode_dict_file = "%s.encode_dict.json" % css_file
+    idx = pydash.last_index_of(css_file, "/")
+    if idx >= 0:
+        file_name = css_file[idx + 1:]
+    else:
+        file_name = css_file
+
+    print("file_name", file_name)
+    new_file_name = pydash.replace(file_name, "_mod_easy-login", "")
+    print("new_file_name", new_file_name)
+    new_css_file = pydash.replace(css_file, file_name, new_file_name)
+    encode_dict_file = "%s.encode_dict.json" % new_css_file
     if os.path.exists(encode_dict_file):
         with open(encode_dict_file, 'r') as load_f:
             encode_dict = json.load(load_f)
     else:
         encode_dict = parse_data_to_dict(data)
+        print("len", len(encode_dict_file))
         with open(encode_dict_file, "w") as f:
             json.dump(encode_dict, f)
 
@@ -111,7 +165,6 @@ def parse_css(css_file):
 
     # svg_urls, encode_dict = parse_css("css/1eb515893adcc915f7b5cb7d12b8772f.css")
     print("svg_urls", svg_urls)
-    class_to_word = {}
     done_parse = False
     for url in svg_urls:
         if done_parse:
@@ -125,9 +178,7 @@ def parse_css(css_file):
                 path_dict = get_path_dict(data_path)
                 href_dict = get_href_dict(data_path)
                 if pydash.is_empty(path_dict) or pydash.is_empty(href_dict):
-                    text_path(data_path)
-                    print("EEEEMPTY")
-                    continue
+                    path_dict, href_dict = get_text_dict(data_path)
             except Exception as e:
                 print("Parse href_dict error!", e)
                 continue
@@ -155,18 +206,11 @@ def parse_css(css_file):
             # print("unknown keys", pydash.difference(keys1, keys2))
 
             continue
-        print('ERROR找不到svg文件，请自己下载到svgs目录！[{now_time}] {msg}'.format(now_time=datetime.datetime.now(), msg=url))
-        # data = download("http:%s" % url)
-        # xxxx = pydash.starts_with(data, "<html")
-        # print("XXXXX", xxxx)
-        #
-        # with open(data_path, 'wb') as f:
-        #     f.write(data)
-        # exit()
 
-    # url(//s3plus.meituan.net/v1/mss_0a06a471f9514fc79c981b5466f56b91/svgtextcss/552560215a8c8f609b7fb7bd1664070d.svg)
+    with open(class_dict_file, "w") as f:
+        json.dump(class_to_word, f)
 
-    encode_dict
+    return class_to_word
 
 
-result = parse_css("css/1eb515893adcc915f7b5cb7d12b8772f.css")
+result = get_css_class_dict("css/1eb515893adcc915f7b5cb7d12b8772f.css")

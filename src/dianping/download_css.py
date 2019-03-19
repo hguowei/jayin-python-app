@@ -52,26 +52,28 @@ def get_css_links(html):
     return css_links
 
 
-for file_path in files:
-    # file_path = "htmls/18766328.html"
-    print("file_path", file_path)
-    html = read_html(path=file_path)
-    print("html", html)
-    css_urls = get_css_links(html)
-    print("css_url", css_urls)
+if __name__ == '__main__':
 
-    for css_url in css_urls:
-        print("css_url", css_url)
-        idx = pydash.last_index_of(css_url, "/")
-        css_name = css_url[idx + 1:]
-        css_path = "css/%s" % css_name
-        print("css_path", css_path)
+    for file_path in files:
+        # file_path = "htmls/18766328.html"
+        print("file_path", file_path)
+        html = read_html(path=file_path)
+        print("html", html)
+        css_urls = get_css_links(html)
+        print("css_url", css_urls)
 
-        if os.path.exists(css_path):
-            continue
-        css_html = download(css_url)
-        # print("css_html", css_html)
+        for css_url in css_urls:
+            print("css_url", css_url)
+            idx = pydash.last_index_of(css_url, "/")
+            css_name = css_url[idx + 1:]
+            css_path = "css/%s" % css_name
+            print("css_path", css_path)
 
-        with open(css_path, 'wb') as f:
-            f.write(css_html)
-        exit()
+            if os.path.exists(css_path):
+                continue
+            css_html = download(css_url)
+            # print("css_html", css_html)
+
+            with open(css_path, 'wb') as f:
+                f.write(css_html)
+            exit()

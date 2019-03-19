@@ -1,22 +1,36 @@
 # encoding: utf-8
-import datetime
-import random
-import time
 import re
-import pydash
 
-# from selenium.webdriver.chrome.options import Options
-# from selenium import webdriver
 from lxml import etree
-import requests
-
+import pydash
+from download_css import get_css_links
+from parse_css import get_css_class_dict
 from utils import read_file, to_string
 
 
-def parse_comment_page(doc):
+def parse_comment_page(doc, css_urls):
     """
         解析评论页并提取数据
     """
+    tmp_class_dict = {}
+
+    def get_class_dict(css_url):
+        tmp_class_dict_keys = list(tmp_class_dict.keys())
+        if pydash.includes(tmp_class_dict_keys, css_url):
+            return tmp_class_dict[css_url]
+        else:
+            class_dict = get_css_class_dict(css_url)
+            tmp_class_dict[css_url] = class_dict
+            return class_dict
+
+    def get_class_means(class_name):
+        for css_url in css_urls:
+            print("css_url", css_url)
+            class_dict = get_class_dict(css_url)
+            if pydash.includes(list(class_dict.keys()), class_name):
+                return class_dict[class_name]
+        return None
+
     datas = []
     for li in doc.xpath('//*[@class="mod comment"]/ul/li'):
         print("li", li)
@@ -44,7 +58,11 @@ def parse_comment_page(doc):
             # <b class="([a-zA-Z0-9]{5,6})"/>
             for class_name in re.findall(r'<b class="([a-zA-Z0-9]{5,6})"/>', comment):
                 origin_string = '<b class="%s"/>' % class_name
-                print("class_name", class_name, origin_string)
+                meaning = get_class_means(class_name)
+                print("class_name", class_name, "meaning", meaning, origin_string)
+                print("comment", comment)
+                comment = pydash.replace(comment, origin_string, get_class_means(class_name))
+
                 class_set.add(class_name)
 
             print("comment=")
@@ -66,9 +84,17 @@ def parse_comment_page(doc):
     return datas
 
 
-file_path = "/Users/huang/Desktop/workpython/jayin-python-app/src/dianping/htmls/504634.html"
-html = read_file(file_path)
+def parse_one_html(file_path):
+    html = read_file(file_path)
 
-doc = etree.HTML(html)
-result = parse_comment_page(doc)
-print("result", result)
+    css_urls = get_css_links(html)
+    print("css_url", css_urls)
+
+    doc = etree.HTML(html)
+    result = parse_comment_page(doc, css_urls)
+    print("result", result)
+
+
+# file_path = "/Users/huang/Desktop/workpyt/hon/jayin-python-app/src/dianping/htmls/504634.html"
+file_path = "htmls/【THE C·HOUSE】电话,地址,价格,营业时间(图) - 上海美食 - 大众点评网.htm"
+parse_one_html(file_path)

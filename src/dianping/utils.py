@@ -79,13 +79,34 @@ def list_files(file_dir, suffix):
 
 
 def find_file(file_dir, suffix):
+    results = []
     for root, dirs, files in os.walk(file_dir):
         # for filename in files:
-        #     print("file:%s\n" % filename)
+        #     print("file:%s" % filename)
         # for dirname in dirs:
-        #     print("dir:%s\n" % dirname)
-        results = []
+        #     print("dir:%s" % dirname)
         for filename in files:
+            print("filename", filename, suffix, pydash.ends_with(filename, suffix))
             if pydash.ends_with(filename, suffix):
                 results.append("%s/%s" % (root, filename))
     return results
+
+
+def to_shorter_file_name(css_file, surfix):
+    idx = pydash.last_index_of(css_file, "/")
+    if idx >= 0:
+        file_name = css_file[idx + 1:]
+    else:
+        file_name = css_file
+
+    print("file_name", file_name)
+    new_file_name = pydash.replace(file_name, "_mod_easy-login", "")
+    print("new_file_name", new_file_name)
+    new_css_file = pydash.replace(css_file, file_name, new_file_name)
+    return "%s.%s" % (new_css_file, surfix)
+
+#
+# result = find_file(".", "1eb515893adcc915f7b5cb7d12b8772f.css")
+# print("result", result)
+#
+# print(pydash.ends_with("1eb515893adcc915f7b5cb7d12b8772f.css", "1eb515893adcc915f7b5cb7d12b8772f.css"))
