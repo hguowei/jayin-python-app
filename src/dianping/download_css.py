@@ -4,7 +4,7 @@ import os
 import pydash
 from lxml import etree
 
-from utils import list_files, download, to_string
+from utils import list_files, download, to_string, read_file
 
 files = list_files(file_dir="htmls", suffix=".html")
 print("files", len(files), files)
@@ -20,13 +20,13 @@ def read_html(path):
 def get_css_url(link_str):
     css_prefix = 'href="'
     idx = pydash.index_of(link_str, css_prefix)
-    print("idx", idx)
+    # print("idx", idx)
     css_suffix = '.css"'
     css_idx = pydash.index_of(link_str, css_suffix)
-    print("idx", css_idx)
+    # print("idx", css_idx)
     if idx >= 0 and css_idx >= 0:
         tmp_str = link_str[idx + len(css_prefix): css_idx + len(css_suffix) - 1]
-        print("tmp_str", tmp_str)
+        # print("tmp_str", tmp_str)
         return "http:%s" % tmp_str
     return None
 
@@ -44,7 +44,7 @@ def get_css_links(html):
     css_links = []
     for link in doc.xpath('//link'):
         link_str = to_string(link)
-        print("link", link_str)
+        # print("link", link_str)
         css_link = get_css_url(link_str)
         if css_link is not None:
             css_links.append(css_link)
@@ -52,28 +52,38 @@ def get_css_links(html):
     return css_links
 
 
+def parse_a_html(file_path):
+    # file_path = "htmls/18766328.html"
+    print("file_path", file_path)
+    # html = read_html(path=file_path)
+    html = read_file(file_path)
+    print("html", html)
+    css_urls = get_css_links(html)
+    print("css_url", css_urls)
+
+    for css_url in css_urls:
+        print("css_url", css_url)
+        idx = pydash.last_index_of(css_url, "/")
+        css_name = css_url[idx + 1:]
+        css_path = "css/%s" % css_name
+        print("css_path", css_path)
+
+        if os.path.exists(css_path):
+            continue
+        css_html = download(css_url)
+        # print("css_html", css_html)
+
+        with open(css_path, 'wb') as f:
+            f.write(css_html)
+
+
 if __name__ == '__main__':
+    pass
+    # for file_path in files:
+    #     parse_a_html(file_path)
 
-    for file_path in files:
-        # file_path = "htmls/18766328.html"
-        print("file_path", file_path)
-        html = read_html(path=file_path)
-        print("html", html)
-        css_urls = get_css_links(html)
-        print("css_url", css_urls)
+    # file_path = "/Users/huang/Desktop/workpython/jayin-python-app/src/selenium/dianping/深圳聚餐相关搜索结果推荐-大众点评网.mhtml"
+    # file_path = "/Users/huang/Desktop/workpython/jayin-python-app/src/selenium/dianping/深圳聚餐相关搜索结果推荐-大众点评网.html"
+    # parse_a_html(file_path)
 
-        for css_url in css_urls:
-            print("css_url", css_url)
-            idx = pydash.last_index_of(css_url, "/")
-            css_name = css_url[idx + 1:]
-            css_path = "css/%s" % css_name
-            print("css_path", css_path)
 
-            if os.path.exists(css_path):
-                continue
-            css_html = download(css_url)
-            # print("css_html", css_html)
-
-            with open(css_path, 'wb') as f:
-                f.write(css_html)
-            exit()

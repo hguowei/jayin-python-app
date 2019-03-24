@@ -21,9 +21,8 @@ def parse_comment_page(doc):
         name = li.xpath('.//a[@class="name"]/text()')[0].strip('\n\r \t')
         try:
             star = li.xpath('.//span[contains(./@class, "sml-rank-stars")]/@class')[0]
-            print("star1", star)
             star = re.search(r'sml-str(\d+)', star).group(1)
-            print("star2", star)
+            print("star", star)
         except IndexError:
             star = 0
         time = li.xpath('.//span[@class="time"]/text()')[0].strip('\n\r \t')

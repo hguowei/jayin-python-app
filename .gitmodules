@@ -19,3 +19,6 @@
 [submodule "src/Python-PANDAS"]
 	path = src/Python-PANDAS
 	url = https://github.com/Asummit/Python-PANDAS.git
+[submodule "src/DPspider"]
+	path = src/DPspider
+	url = https://github.com/01ly/DPspider.git

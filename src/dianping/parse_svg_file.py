@@ -1,6 +1,7 @@
 import json
 import os
 import xml.sax
+import pydash
 
 
 class PathHandler(xml.sax.ContentHandler):
@@ -79,7 +80,8 @@ class TextHandler(xml.sax.ContentHandler):
             href_key = "#%s" % self.y
             path_key = "%s" % self.y
             self.href_dict[href_key] = self.data
-            self.path_dict[path_key] = "M0 %s 14" % self.y
+            tmp_list = pydash.split(self.x, " ")
+            self.path_dict[path_key] = "M0 %s %d" % (self.y, int(tmp_list[2]) - int(tmp_list[1]))
 
 
 def get_path_dict(svg_file):
@@ -95,8 +97,9 @@ def get_path_dict(svg_file):
 
         parser.parse(svg_file)
         print("path_dict", handler.path_dict)
-        with open(path_dict_file, "w") as f:
-            json.dump(handler.path_dict, f)
+        if not pydash.is_empty(handler.path_dict):
+            with open(path_dict_file, "w") as f:
+                json.dump(handler.path_dict, f)
         print("加载入文件完成...")
 
         return handler.path_dict
@@ -115,9 +118,10 @@ def get_href_dict(svg_file):
         parser.setContentHandler(handler)
         parser.parse(svg_file)
         print("href_dict", handler.href_dict)
-        with open(href_dict_file, "w") as f:
-            json.dump(handler.href_dict, f)
-        print("加载入文件完成...")
+        if not pydash.is_empty(handler.href_dict):
+            with open(href_dict_file, "w") as f:
+                json.dump(handler.href_dict, f)
+            print("加载入文件完成...")
         return handler.href_dict
     else:
         with open(href_dict_file, 'r') as load_f:
@@ -128,27 +132,31 @@ def get_text_dict(svg_file):
     testing = False
     href_dict_file = "%s.href_dict.json" % svg_file
     path_dict_file = "%s.path_dict.json" % svg_file
-    if testing or not (os.path.exists(href_dict_file) and os.path.exists(path_dict_file)):
+    href_dict = {}
+    path_dict = {}
+
+    if os.path.exists(href_dict_file):
+        with open(href_dict_file, 'r') as load_f:
+            href_dict = json.load(load_f)
+    if os.path.exists(path_dict_file):
+        with open(path_dict_file, 'r') as load_f:
+            path_dict = json.load(load_f)
+    if pydash.is_empty(href_dict) or pydash.is_empty(path_dict):
         parser = xml.sax.make_parser()
         parser.setFeature(xml.sax.handler.feature_namespaces, 0)
 
         handler = TextHandler()
         parser.setContentHandler(handler)
         parser.parse(svg_file)
-        print("href_dict", handler.href_dict)
-        print("path_dict", handler.path_dict)
+        href_dict = handler.href_dict
+        path_dict = handler.path_dict
         with open(href_dict_file, "w") as f:
-            json.dump(handler.href_dict, f)
+            json.dump(href_dict, f)
         with open(path_dict_file, "w") as f:
-            json.dump(handler.path_dict, f)
+            json.dump(path_dict, f)
         print("加载入文件完成...")
-        return handler.path_dict, handler.href_dict
-    else:
-        with open(href_dict_file, 'r') as load_f:
-            href_dict = json.load(load_f)
-        with open(path_dict_file, 'r') as load_f:
-            path_dict = json.load(load_f)
-        return path_dict, href_dict
+
+    return path_dict, href_dict
 
 
 def parse_text():

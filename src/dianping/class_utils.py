@@ -1,5 +1,7 @@
 import pydash
 import numpy as np
+
+from parse_svg_file import get_path_dict, get_href_dict, get_text_dict
 from utils import list_files, find_file
 
 all_css_files = list_files(file_dir="css", suffix=".css")
@@ -21,7 +23,12 @@ class ClassDict(object):
         path_list = list(path_dict.items())
 
         def map_func(kv):
-            return int(kv[0]), int(pydash.split(kv[1], " ")[1])
+            tmp_list = pydash.split(kv[1], " ")
+            try:
+                step = int(tmp_list[2])
+            except:
+                step = 14
+            return int(kv[0]), (int(tmp_list[1]), step)
 
         path_list = pydash.map_(path_list, map_func)
         path_list = pydash.sort_by(path_list, lambda kv: kv[0])
@@ -30,16 +37,20 @@ class ClassDict(object):
 
     def get_line_id(self, y):
         y = np.abs(y)
-        for line_id, line_y in self.path_list:
+        step = 14
+        for line_id, kv in self.path_list:
+            line_y, step = kv
+            step = np.abs(step)
             if y < line_y:
-                return line_id
-        return self.path_list[-1][0]
+                return line_id, step
+        return self.path_list[-1][0], step
 
     def get_by_location(self, x, y):
         x = np.abs(x)
-        line_id = "#%d" % self.get_line_id(y)
+        kv = self.get_line_id(y)
+        line_id = "#%d" % kv[0]
         line_string = self.href_dict[line_id]
-        word_index = int(x / 14)
+        word_index = int(x / kv[1])
 
         try:
             line_string[word_index]
@@ -47,10 +58,28 @@ class ClassDict(object):
             pass
         return line_string[word_index]
 
+    def get_by_location_str(self, tmp_str):
+        tmp_str = pydash.replace(tmp_str, "px", "")
+        tmp_list = pydash.split(tmp_str, " ")
+        return self.get_by_location(float(tmp_list[0]), float(tmp_list[1]))
+
     def test(self):
         result = self.get_by_location(-490, -2101)
         print("result", result)
 
 
-def get_meaning(css_class):
-    pass
+def get_svg_ClassDict(
+        data_path="/Users/huang/Desktop/workpython/jayin-python-app/src/dianping/svgs/0f9f119c6827b4fae4c85ca34c56cbda.svg"):
+    path_dict = get_path_dict(data_path)
+    href_dict = get_href_dict(data_path)
+    print("path_dict", path_dict, pydash.is_empty(path_dict))
+    if pydash.is_empty(path_dict) or pydash.is_empty(href_dict):
+        path_dict, href_dict = get_text_dict(data_path)
+    return ClassDict(path_dict, href_dict)
+
+
+if __name__ == '__main__':
+    cd = get_svg_ClassDict()
+    # result = cd.get_by_location_str("-523.0px -42.0px")
+    result = cd.get_by_location_str("-55.0px -81.0px")
+    print("result", result)

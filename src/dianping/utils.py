@@ -86,7 +86,7 @@ def find_file(file_dir, suffix):
         # for dirname in dirs:
         #     print("dir:%s" % dirname)
         for filename in files:
-            print("filename", filename, suffix, pydash.ends_with(filename, suffix))
+            # print("filename", filename, suffix, pydash.ends_with(filename, suffix))
             if pydash.ends_with(filename, suffix):
                 results.append("%s/%s" % (root, filename))
     return results
