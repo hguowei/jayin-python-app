@@ -12,7 +12,10 @@ from class_utils import ClassDict
 from parse_svg_file import get_path_dict, get_href_dict, get_text_dict
 
 import re
-from settings import *
+
+PATTERN_BACKGROUND = r'.(.*?){background:(.*?)px(.*?)px;}'
+PATTERN_SPAN_CLASS = r'\[class\^="(.+?)"\]{width:(.+?)px;.+?url\((.+?)\)'
+CSS_URL_PREFIX = 'http:'
 
 
 def parse_shop_css(css):
