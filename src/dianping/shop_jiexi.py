@@ -238,6 +238,112 @@ def parse_one_shop_css(html_path):
     return class_to_word_dict, class_to_int_dict
 
 
+def parse_a_html(file_path):
+    html = read_file(file_path)
+
+    doc = etree.HTML(html)
+
+    # TODO, error
+    # shop_url = str(doc.xpath('//*[@id="qrcode"]/@title')[0])
+    shop_url = str(doc.xpath("/html/head/link[7]/@href")[0])
+
+    shop_id = shop_url[pydash.last_index_of(shop_url, "/") + 1:]
+
+    class_to_word_dict, class_to_int_dict = parse_one_shop_css(file_path)
+    print("class_to_word_dict")
+    print(class_to_word_dict)
+    print("class_to_int_dict")
+    print(class_to_int_dict)
+
+    data_list = []
+    for comment_id, li in enumerate(doc.xpath('//*[@class="mod comment"]/ul/li')):
+        # print("li", li)
+        username = li.xpath('.//a[@class="name"]/text()')[0].strip('\n\r \t')
+        user_href = li.xpath('.//a[@class="name"]/@href')[0]
+        try:
+            huiying_str = pydash.trim("".join(li.xpath('.//div/div/div/a[2]/text()')))
+            huiying_num = int(huiying_str[pydash.index_of(huiying_str, "(") + 1: pydash.index_of(huiying_str, ")")])
+        except:
+            huiying_num = None
+
+        try:
+            zan_str = pydash.trim("".join(li.xpath('.//div/div/div/a[1]/text()')))
+            zan_num = int(zan_str[pydash.index_of(zan_str, "(") + 1: pydash.index_of(zan_str, ")")])
+        except:
+            zan_num = None
+
+        try:
+            pic_num = len(li.xpath('.//div/div[3]/div[1]/a'))
+        except:
+            pic_num = None
+        try:
+            tmp_src = str(li.xpath('.//p/img/@src')[0])
+            pre = "squarelv"
+            end = ".png"
+            pre_idx = pydash.index_of(tmp_src, pre)
+            end_idx = pydash.index_of(tmp_src, end)
+            user_level = int(tmp_src[pre_idx + len(pre): end_idx])
+        except:
+            user_level = None
+        try:
+            star = li.xpath('.//span[contains(./@class, "sml-rank-stars")]/@class')[0]
+            # print("star1", star)
+            star = re.search(r'sml-str(\d+)', star).group(1)
+            print("star", star)
+        except IndexError:
+            star = 0
+        time = li.xpath('.//span[@class="time"]/text()')[0].strip('\n\r \t')
+        # test = li.xpath('.//p[@class="desc J-desc"]/text()')
+        # comment = pydash.join(test, "")
+        # print("comment=")
+        # print(comment)
+        test = li.xpath('.//p[@class="desc J-desc"]')
+        print("test", type(test), test)
+        for comment_elem in test:
+            # just one comment.
+            print("comment_elem", type(comment_elem), comment_elem)
+            comment = to_string(comment_elem)
+
+            for class_name in re.findall(r'<b class="([a-zA-Z0-9]{5,6})"/>', comment):
+                try:
+                    origin_string = '<b class="%s"/>' % class_name
+                    word = class_to_word_dict[class_name]
+                    print("class_name", class_name, "word", word, origin_string)
+                    print("comment", comment)
+                    comment = pydash.replace(comment, origin_string, word)
+                except Exception as e:
+                    # raise e
+                    pass
+
+            print("comment=")
+            print(comment)
+
+        dr = re.compile(r'<[^>]+>', re.S)
+        comment = dr.sub('', comment)
+        comment = pydash.trim_end(comment)
+
+        score = ' '.join(map(lambda s: s.strip('\n\r \t'), li.xpath('.//span[@class="score"]//text()')))
+
+        data = {
+            'shop_id': shop_id,
+            'shop_url': shop_url,
+            'comment_id': comment_id,
+            'username': username,
+            "user_level": user_level,
+            "user_href": user_href,
+            'comment': comment,
+            'star': star,
+            'score': score,
+            'time': time,
+            "pic_num": pic_num,
+            "zan_num": zan_num,
+            "huiying_num": huiying_num,
+        }
+        data_list.append(data)
+        print("data", data)
+        return shop_id, data_list
+
+
 def parse_all_html():
     files = list_files(file_dir="htmls")
 
@@ -246,74 +352,7 @@ def parse_all_html():
     all_data_list = []
     for file_path in files:
         print("file_path", file_path)
-        html = read_file(file_path)
-
-        doc = etree.HTML(html)
-
-        shop_url = str(doc.xpath('//*[@id="qrcode"]/@title')[0])
-        shop_id = shop_url[pydash.last_index_of(shop_url, "=") + 1:]
-
-        class_to_word_dict, class_to_int_dict = parse_one_shop_css(file_path)
-        print("class_to_word_dict")
-        print(class_to_word_dict)
-        print("class_to_int_dict")
-        print(class_to_int_dict)
-
-        data_list = []
-        for comment_id, li in enumerate(doc.xpath('//*[@class="mod comment"]/ul/li')):
-            print("li", li)
-            name = li.xpath('.//a[@class="name"]/text()')[0].strip('\n\r \t')
-            try:
-                star = li.xpath('.//span[contains(./@class, "sml-rank-stars")]/@class')[0]
-                # print("star1", star)
-                star = re.search(r'sml-str(\d+)', star).group(1)
-                print("star", star)
-            except IndexError:
-                star = 0
-            time = li.xpath('.//span[@class="time"]/text()')[0].strip('\n\r \t')
-            # test = li.xpath('.//p[@class="desc J-desc"]/text()')
-            # comment = pydash.join(test, "")
-            # print("comment=")
-            # print(comment)
-            test = li.xpath('.//p[@class="desc J-desc"]')
-            print("test", type(test), test)
-            for comment_elem in test:
-                # just one comment.
-                print("comment_elem", type(comment_elem), comment_elem)
-                comment = to_string(comment_elem)
-
-                for class_name in re.findall(r'<b class="([a-zA-Z0-9]{5,6})"/>', comment):
-                    try:
-                        origin_string = '<b class="%s"/>' % class_name
-                        word = class_to_word_dict[class_name]
-                        print("class_name", class_name, "word", word, origin_string)
-                        print("comment", comment)
-                        comment = pydash.replace(comment, origin_string, word)
-                    except Exception as e:
-                        # raise e
-                        pass
-
-                print("comment=")
-                print(comment)
-
-            dr = re.compile(r'<[^>]+>', re.S)
-            comment = dr.sub('', comment)
-            comment = pydash.trim_end(comment)
-
-            score = ' '.join(map(lambda s: s.strip('\n\r \t'), li.xpath('.//span[@class="score"]//text()')))
-
-            data = {
-                'shop_id': shop_id,
-                'shop_url': shop_url,
-                'comment_id': comment_id,
-                'name': name,
-                'comment': comment,
-                'star': star,
-                'score': score,
-                'time': time,
-            }
-            data_list.append(data)
-            print("data", data)
+        shop_id, data_list = parse_a_html(file_path)
 
         all_data_list.extend(data_list)
         data = pd.DataFrame(data_list)
@@ -325,4 +364,6 @@ def parse_all_html():
     shops_comment_df.to_csv(shop_path, index=False, encoding='utf_8_sig')
 
 
-parse_all_html()
+# parse_all_html()
+parse_a_html(
+    file_path="/Users/huang/Desktop/workpython/jayin-python-app/src/dianping/htmls/【蘩楼(华强北店)】电话,地址,价格,营业时间(图) - 深圳美食 - 大众点评网.html")
