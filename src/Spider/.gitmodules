@@ -1,0 +1,3 @@
+[submodule "dianping2"]
+	path = dianping2
+	url = https://github.com/longxiaofei/dianping.git
